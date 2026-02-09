@@ -55,6 +55,6 @@ export function generateShareText(result: RunResult): string {
     `Top Chain: ${topChain}`,
     challenge,
     `Verify ${token}`,
-    'Play: https://heatstack.pages.dev',
+    'Play: https://heatstack.vercel.app/',
   ].join('\n')
 }
