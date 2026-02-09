@@ -1,0 +1,93 @@
+<svg width="1480" height="320" viewBox="0 0 1480 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ringGradient" x1="58" y1="34" x2="252" y2="286" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#72BDFF"/>
+      <stop offset="0.5" stop-color="#FF5EA0"/>
+      <stop offset="1" stop-color="#FFB664"/>
+    </linearGradient>
+
+    <linearGradient id="coreGradient" x1="86" y1="86" x2="216" y2="236" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#29346B"/>
+      <stop offset="1" stop-color="#101633"/>
+    </linearGradient>
+
+    <radialGradient id="innerAura" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(150 160) rotate(90) scale(74)">
+      <stop offset="0" stop-color="#AFC8FF" stop-opacity="0.56"/>
+      <stop offset="1" stop-color="#AFC8FF" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="wordGradient" x1="324" y1="56" x2="1368" y2="246" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FBFF"/>
+      <stop offset="0.46" stop-color="#FFDCC4"/>
+      <stop offset="1" stop-color="#FFBE74"/>
+    </linearGradient>
+
+    <filter id="ringGlow" x="0" y="0" width="320" height="320" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="11" result="blur"/>
+      <feColorMatrix
+        in="blur"
+        type="matrix"
+        values="1 0 0 0 0.21 0 1 0 0 0.17 0 0 1 0 0.40 0 0 0 1 0"
+      />
+      <feBlend mode="screen" in2="SourceGraphic"/>
+    </filter>
+
+    <filter id="wordGlow" x="286" y="34" width="1130" height="230" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feColorMatrix
+        in="blur"
+        type="matrix"
+        values="1 0 0 0 0.18 0 1 0 0 0.14 0 0 1 0 0.24 0 0 0 0.6 0"
+      />
+      <feBlend mode="screen" in2="SourceGraphic"/>
+    </filter>
+
+    <filter id="hGlow" x="88" y="90" width="124" height="140" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="3.2" result="blur"/>
+      <feColorMatrix
+        in="blur"
+        type="matrix"
+        values="1 0 0 0 0.75 0 1 0 0 0.82 0 0 1 0 1 0 0 0 0.8 0"
+      />
+      <feBlend mode="screen" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#ringGlow)">
+    <polygon points="150,28 255,90 255,214 150,276 45,214 45,90" fill="url(#ringGradient)" fill-opacity="0.22"/>
+    <polygon points="150,52 232,100 232,204 150,252 68,204 68,100" fill="#0D1228" stroke="url(#ringGradient)" stroke-width="7"/>
+    <polygon points="150,68 214,106 214,198 150,236 86,198 86,106" fill="url(#coreGradient)"/>
+    <polygon points="150,80 203,112 203,192 150,224 97,192 97,112" fill="url(#innerAura)"/>
+  </g>
+
+  <text
+    x="150"
+    y="160"
+    text-anchor="middle"
+    dominant-baseline="central"
+    fill="#F7FBFF"
+    font-family="'Sora', 'Space Grotesk', 'Avenir Next', 'Segoe UI', sans-serif"
+    font-size="108"
+    font-weight="900"
+    letter-spacing="0"
+    filter="url(#hGlow)"
+  >
+    H
+  </text>
+
+  <g filter="url(#wordGlow)" fill="url(#wordGradient)">
+    <text
+      x="324"
+      y="206"
+      font-family="'Sora', 'Space Grotesk', 'Avenir Next', 'Segoe UI', sans-serif"
+      font-size="148"
+      font-weight="900"
+      letter-spacing="1"
+      textLength="1040"
+      lengthAdjust="spacingAndGlyphs"
+    >
+      HEATSTACK
+    </text>
+    <rect x="328" y="234" width="1032" height="14" rx="3"/>
+  </g>
+</svg>
