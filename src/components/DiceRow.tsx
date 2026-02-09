@@ -14,14 +14,15 @@ export function DiceRow() {
   }, [stageIds])
 
   return (
-    <div className="flex flex-col items-center gap-2.5">
+    <div className="flex flex-col items-center gap-2">
       <span className="font-micro text-[10px] font-semibold uppercase text-white/45">
         Letter Rack
       </span>
-      <span className="text-[11px] text-white/40 -mt-1">
-        Only these 5 letters can be used.
+      <span className="text-[10px] text-white/40 -mt-1">
+        <span className="sm:hidden">Rack letters only.</span>
+        <span className="hidden sm:inline">Only these 5 letters can be used.</span>
       </span>
-      <div className="flex gap-2.5 sm:gap-3">
+      <div className="flex gap-1.5 sm:gap-3">
         {dice.map((die, i) => {
           const order = orderById.get(die.id) ?? null
           return (

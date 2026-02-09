@@ -90,3 +90,7 @@ input {
   font-family: "Sora", "Space Grotesk", sans-serif;
   font-variant-numeric: tabular-nums;
 }
+
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+}

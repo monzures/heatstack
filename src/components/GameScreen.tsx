@@ -202,7 +202,7 @@ export function GameScreen() {
   }
 
   return (
-    <div className="relative z-10 flex-1 px-4 sm:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+14px)] flex flex-col gap-3 overflow-x-hidden overflow-y-auto overscroll-contain">
+    <div className="scroll-touch relative z-10 flex-1 px-4 sm:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+14px)] flex flex-col gap-3 overflow-x-hidden overflow-y-auto overscroll-contain">
       <header className="flex items-center justify-between">
         <button
           onClick={goToMenu}
@@ -253,7 +253,7 @@ export function GameScreen() {
         </div>
       </section>
 
-      <div className={`rounded-3xl border border-white/10 bg-white/[0.03] px-3 py-4 flex flex-col items-center gap-4 ${isPlaying ? 'flex-1 min-h-0 justify-center' : 'justify-start'}`}>
+      <div className={`w-full rounded-3xl border border-white/10 bg-white/[0.03] px-3 py-3 sm:py-4 flex flex-col items-center gap-3 sm:gap-4 ${isPlaying ? 'justify-start sm:flex-1 sm:min-h-0 sm:justify-center' : 'justify-start'}`}>
         {isPlaying ? (
           <>
             <StageTray stageWord={stageWord} stageLength={stageIds.length} />
@@ -439,11 +439,11 @@ function HudBox(props: { label: string; value: string; emphasis?: boolean }) {
 function StageTray(props: { stageWord: string; stageLength: number }) {
   const letters = props.stageWord.toUpperCase().split('')
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-1.5 sm:gap-2">
       {Array.from({ length: 5 }, (_, i) => (
         <div
           key={i}
-          className={`w-12 h-12 rounded-xl border flex items-center justify-center text-xl font-black ${
+          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl border flex items-center justify-center text-lg sm:text-xl font-black ${
             i < props.stageLength
               ? 'bg-[#281f2c] border-[#ff67b2] text-white'
               : 'bg-[#121629] border-white/10 text-white/20'
