@@ -5,7 +5,7 @@ import { useGameStore } from '@/store/gameStore'
 import { getAnagramsForLetters, isValidWord } from '@/game/words'
 import { heatToColor } from '@/game/heat'
 import { getModifierById, isRerollDisabled } from '@/game/modifiers'
-import { playTone } from '@/lib/feedback'
+import { isHapticsSupported, playTone } from '@/lib/feedback'
 import { generateShareText } from '@/game/share'
 import { getMsUntilNextPacificDay } from '@/game/rng'
 import { DiceRow } from './DiceRow'
@@ -73,6 +73,8 @@ export function GameScreen() {
   const hapticsEnabled = useGameStore((s) => s.hapticsEnabled)
   const setSoundEnabled = useGameStore((s) => s.setSoundEnabled)
   const setHapticsEnabled = useGameStore((s) => s.setHapticsEnabled)
+  const hapticsSupported = useMemo(() => isHapticsSupported(), [])
+  const isPlaying = status === 'playing'
 
   useEffect(() => {
     if (status !== 'playing') return
@@ -200,7 +202,7 @@ export function GameScreen() {
   }
 
   return (
-    <div className="relative z-10 flex-1 px-4 sm:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+14px)] flex flex-col gap-3 overflow-hidden">
+    <div className="relative z-10 flex-1 px-4 sm:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+14px)] flex flex-col gap-3 overflow-x-hidden overflow-y-auto overscroll-contain">
       <header className="flex items-center justify-between">
         <button
           onClick={goToMenu}
@@ -215,7 +217,9 @@ export function GameScreen() {
           {mode === 'daily' && (
             <p className="text-[11px] text-[#ffcf9a] font-semibold">{dailyModifier.name}</p>
           )}
-          <p className="text-[11px] text-white/45">Use rack letters only. Tap or type to build a word.</p>
+          <p className="text-[11px] text-white/45">
+            {isPlaying ? 'Use rack letters only. Tap or type to build a word.' : 'Run complete.'}
+          </p>
         </div>
         <div className="min-w-[72px] text-right">
           <p className="font-micro text-xs text-white/45 uppercase">Time</p>
@@ -249,68 +253,82 @@ export function GameScreen() {
         </div>
       </section>
 
-      <div className="flex-1 min-h-0 rounded-3xl border border-white/10 bg-white/[0.03] px-3 py-4 flex flex-col items-center justify-center gap-4">
-        <StageTray stageWord={stageWord} stageLength={stageIds.length} />
-        <DiceRow />
+      <div className={`rounded-3xl border border-white/10 bg-white/[0.03] px-3 py-4 flex flex-col items-center gap-4 ${isPlaying ? 'flex-1 min-h-0 justify-center' : 'justify-start'}`}>
+        {isPlaying ? (
+          <>
+            <StageTray stageWord={stageWord} stageLength={stageIds.length} />
+            <DiceRow />
 
-        <div className="text-center">
-          <p className="font-micro text-[11px] uppercase text-white/45">Stage Word</p>
-          <p className="font-brand mt-1 text-3xl font-extrabold tracking-[0.18em]">{stageWord.padEnd(5, '.')}</p>
-          <p className="mt-1 text-xs font-semibold">
-            {alreadyUsed && stageComplete && <span className="text-[#ff8a7a]">Already used in this run</span>}
-            {!alreadyUsed && isValid && <span className="text-[#73ffa3]">Playable word</span>}
-            {!isValid && stageComplete && <span className="text-white/45">Not in playable list for this rack</span>}
-            {!stageComplete && <span className="text-white/45">Use only rack letters. Fill all 5 slots.</span>}
-          </p>
-          {canSubmit && (
-            <p className="mt-1 text-[11px] text-white/45">Valid words auto-submit on the 5th letter.</p>
-          )}
-          {showHint && hintMask && (
-            <p className="mt-1 text-[11px] text-[#ffc789] font-semibold">
-              Hint trail: {hintMask}
+            <div className="text-center">
+              <p className="font-micro text-[11px] uppercase text-white/45">Stage Word</p>
+              <p className="font-brand mt-1 text-3xl font-extrabold tracking-[0.18em]">{stageWord.padEnd(5, '.')}</p>
+              <p className="mt-1 text-xs font-semibold">
+                {alreadyUsed && stageComplete && <span className="text-[#ff8a7a]">Already used in this run</span>}
+                {!alreadyUsed && isValid && <span className="text-[#73ffa3]">Playable word</span>}
+                {!isValid && stageComplete && <span className="text-white/45">Not in playable list for this rack</span>}
+                {!stageComplete && <span className="text-white/45">Use only rack letters. Fill all 5 slots.</span>}
+              </p>
+              {canSubmit && (
+                <p className="mt-1 text-[11px] text-white/45">Valid words auto-submit on the 5th letter.</p>
+              )}
+              {showHint && hintMask && (
+                <p className="mt-1 text-[11px] text-[#ffc789] font-semibold">
+                  Hint trail: {hintMask}
+                </p>
+              )}
+              {showHint && hintedWord && stageComplete && !isValid && (
+                <p className="mt-0.5 text-[11px] text-white/65">
+                  Try this rack word: <span className="font-bold text-[#ffd39d]">{hintedWord}</span>
+                </p>
+              )}
+            </div>
+            {!showHint && (
+              <p className="text-[11px] text-white/40 -mt-1">
+                Hint unlocks after 10s on the same rack.
+              </p>
+            )}
+
+            <div className="w-full max-w-[420px] grid grid-cols-3 gap-2">
+              <Button variant="outline" onClick={autoFillStage} disabled={!isPlaying || rerollsDisabledByModifier || rerollsLeft < 2}>
+                Auto Fill (-2)
+              </Button>
+              <Button variant="outline" onClick={shuffleRack} disabled={!isPlaying}>
+                Shuffle Rack
+              </Button>
+              <Button variant="outline" onClick={rerollRack} disabled={!isPlaying || rerollsDisabledByModifier || rerollsLeft <= 0}>
+                Re-roll (-1)
+              </Button>
+            </div>
+            {mode === 'daily' && (
+              <p className="text-[11px] text-white/55 -mt-1 text-center">
+                Daily twist: {dailyModifier.description}
+              </p>
+            )}
+
+            <div className="w-full max-w-[420px] grid grid-cols-2 gap-2">
+              <Button
+                onClick={clearStage}
+                disabled={!isPlaying || stageIds.length === 0}
+                className="bg-[#ff5667] text-white hover:bg-[#ff475a] shadow-[0_6px_22px_rgba(255,86,103,0.35)]"
+              >
+                CLEAR STAGE
+              </Button>
+              <Button onClick={submitWord} disabled={!canAttemptSubmit}>
+                Submit
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className="w-full max-w-[420px] rounded-2xl border border-white/12 bg-black/20 p-4 text-center">
+            <p className="font-micro text-[10px] uppercase tracking-[0.14em] text-white/50">
+              {mode === 'daily' ? 'Daily Complete' : 'Blitz Complete'}
             </p>
-          )}
-          {showHint && hintedWord && stageComplete && !isValid && (
-            <p className="mt-0.5 text-[11px] text-white/65">
-              Try this rack word: <span className="font-bold text-[#ffd39d]">{hintedWord}</span>
+            <p className="mt-2 text-sm text-white/80">
+              Final score <span className="font-black text-[#ffd39d] tabular-nums">{result?.score ?? score}</span>.
             </p>
-          )}
-        </div>
-        {!showHint && (
-          <p className="text-[11px] text-white/40 -mt-1">
-            Hint unlocks after 10s on the same rack.
-          </p>
+            <p className="mt-1 text-[11px] text-white/55">Use the actions below to share or run again.</p>
+          </div>
         )}
-
-        <div className="w-full max-w-[420px] grid grid-cols-3 gap-2">
-          <Button variant="outline" onClick={autoFillStage} disabled={status !== 'playing' || rerollsDisabledByModifier || rerollsLeft < 2}>
-            Auto Fill (-2)
-          </Button>
-          <Button variant="outline" onClick={shuffleRack} disabled={status !== 'playing'}>
-            Shuffle Rack
-          </Button>
-          <Button variant="outline" onClick={rerollRack} disabled={status !== 'playing' || rerollsDisabledByModifier || rerollsLeft <= 0}>
-            Re-roll (-1)
-          </Button>
-        </div>
-        {mode === 'daily' && (
-          <p className="text-[11px] text-white/55 -mt-1 text-center">
-            Daily twist: {dailyModifier.description}
-          </p>
-        )}
-
-        <div className="w-full max-w-[420px] grid grid-cols-2 gap-2">
-          <Button
-            onClick={clearStage}
-            disabled={status !== 'playing' || stageIds.length === 0}
-            className="bg-[#ff5667] text-white hover:bg-[#ff475a] shadow-[0_6px_22px_rgba(255,86,103,0.35)]"
-          >
-            CLEAR STAGE
-          </Button>
-          <Button onClick={submitWord} disabled={!canAttemptSubmit}>
-            Submit
-          </Button>
-        </div>
       </div>
 
       {status === 'finished' && mode === 'blitz' && (
@@ -381,9 +399,10 @@ export function GameScreen() {
             </button>
             <button
               onClick={() => setHapticsEnabled(!hapticsEnabled)}
-              className="text-[10px] uppercase tracking-[0.14em] text-white/55 hover:text-white cursor-pointer"
+              disabled={!hapticsSupported}
+              className={`text-[10px] uppercase tracking-[0.14em] ${hapticsSupported ? 'text-white/55 hover:text-white cursor-pointer' : 'text-white/30 cursor-not-allowed'}`}
             >
-              Haptics {hapticsEnabled ? 'On' : 'Off'}
+              Haptics {hapticsSupported ? (hapticsEnabled ? 'On' : 'Off') : 'N/A'}
             </button>
           </div>
         </div>

@@ -13,6 +13,20 @@ interface ChipNote {
   pan?: number
 }
 
+function isIOSWeb(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent ?? ''
+  const platform = navigator.platform ?? ''
+  const maxTouchPoints = navigator.maxTouchPoints ?? 0
+  return /iPad|iPhone|iPod/.test(ua) || (platform === 'MacIntel' && maxTouchPoints > 1)
+}
+
+export function isHapticsSupported(): boolean {
+  if (typeof navigator === 'undefined') return false
+  if (isIOSWeb()) return false
+  return typeof navigator.vibrate === 'function'
+}
+
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null
   const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
@@ -197,7 +211,6 @@ export function playTone(kind: FeedbackTone, enabled: boolean) {
 
 export function triggerHaptic(pattern: number | number[], enabled: boolean) {
   if (!enabled) return
-  if (typeof navigator === 'undefined') return
-  if (!('vibrate' in navigator)) return
+  if (!isHapticsSupported()) return
   navigator.vibrate(pattern)
 }

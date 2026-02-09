@@ -9,7 +9,7 @@ import { HEAT_START, applyHeatGain, clampHeat, decayHeat } from '@/game/heat.ts'
 import { chooseNextRackSource, getNextCombo, getTopChain, trimRecentRackSources } from '@/game/chain.ts'
 import { calculateWordScore, getDailyMedal } from '@/game/scoring.ts'
 import { getDailyModifierForSeed, getHeatDecayMultiplier, getModifierById, getStartingRerollCharges, getDefaultHeatStartForModifier, isRerollDisabled } from '@/game/modifiers.ts'
-import { playTone, triggerHaptic } from '@/lib/feedback.ts'
+import { isHapticsSupported, playTone, triggerHaptic } from '@/lib/feedback.ts'
 import { useStatsStore } from './statsStore.ts'
 
 interface GameStore extends GameState {
@@ -147,11 +147,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   init: async () => {
     await loadWordLists()
+    const supportsHaptics = isHapticsSupported()
     set({
       wordsLoaded: true,
       showCoachmarks: !readBooleanSetting(COACHMARK_KEY, false),
       soundEnabled: readBooleanSetting(SOUND_KEY, true),
-      hapticsEnabled: readBooleanSetting(HAPTICS_KEY, true),
+      hapticsEnabled: supportsHaptics ? readBooleanSetting(HAPTICS_KEY, true) : false,
       dailyLockedToday: getTodayDailyLock(),
     })
   },
@@ -500,6 +501,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   setHapticsEnabled: (value) => {
+    if (value && !isHapticsSupported()) {
+      writeBooleanSetting(HAPTICS_KEY, false)
+      set({ hapticsEnabled: false })
+      toast.error('Haptics are not available on this browser')
+      return
+    }
     writeBooleanSetting(HAPTICS_KEY, value)
     set({ hapticsEnabled: value })
   },

@@ -8,6 +8,7 @@ import { getDailyModifierForSeed } from '@/game/modifiers'
 import { getDailySeed, getDayNumberForSeed, getMsUntilNextPacificDay } from '@/game/rng'
 import { generateShareText } from '@/game/share'
 import type { RunResult } from '@/game/types'
+import { isHapticsSupported } from '@/lib/feedback'
 import { Button } from './ui/button'
 import { StatsModal } from './StatsModal'
 import { ResultModal } from './ResultModal'
@@ -48,6 +49,7 @@ export function MenuScreen() {
   const dailyStreak = useStatsStore((s) => s.dailyStreak)
   const todaysSeed = getDailySeed()
   const todaysModifier = getDailyModifierForSeed(todaysSeed)
+  const hapticsSupported = useMemo(() => isHapticsSupported(), [])
 
   useEffect(() => {
     void init()
@@ -107,7 +109,7 @@ export function MenuScreen() {
   }
 
   return (
-    <div className="relative z-10 flex-1 px-5 pt-10 pb-8 flex flex-col">
+    <div className="relative z-10 flex-1 min-h-0 px-5 pt-10 pb-[calc(env(safe-area-inset-bottom)+18px)] flex flex-col overflow-x-hidden overflow-y-auto overscroll-contain">
       <motion.div
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -193,10 +195,11 @@ export function MenuScreen() {
               Sound {soundEnabled ? 'On' : 'Off'}
             </button>
             <button
-              onClick={() => setHapticsEnabled(!hapticsEnabled)}
-              className="text-[11px] font-semibold text-white/65 hover:text-white transition-colors cursor-pointer"
+              onClick={() => hapticsSupported && setHapticsEnabled(!hapticsEnabled)}
+              disabled={!hapticsSupported}
+              className={`text-[11px] font-semibold transition-colors ${hapticsSupported ? 'text-white/65 hover:text-white cursor-pointer' : 'text-white/35 cursor-not-allowed'}`}
             >
-              Haptics {hapticsEnabled ? 'On' : 'Off'}
+              Haptics {hapticsSupported ? (hapticsEnabled ? 'On' : 'Off') : 'N/A'}
             </button>
             <button
               onClick={() => setShowStats(true)}
